@@ -22,6 +22,7 @@ public class ReservationController {
         if (claims.isPresent()) {
             return ResponseEntity.ok(claims.get());
         } else {
+            System.out.println(email);
             return ResponseEntity.status(401).body("Invalid or missing token");
         }
     }

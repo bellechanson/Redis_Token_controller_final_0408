@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.du.redis.dto.RedisUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -28,6 +27,7 @@ public class RedisService {
 
         return objectMapper.readValue(jsonValue, RedisUser.class);
     }
+    // Redis에 Token 올리기 코드 필요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     // Redis에서 토큰 가져오기
     public Optional<String> getTokenFromRedis(String userId) {

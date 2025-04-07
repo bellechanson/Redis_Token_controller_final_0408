@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
 
@@ -26,6 +27,13 @@ public class JwtUtil {
 
     public String createToken(String email) {
         Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expiration); // 예: 1시간 후
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", email); // 메서드 매개변수 사용
+        claims.put("role", "USER");
+        claims.put("userId", 12345);
+
         return Jwts.builder()
                 .setSubject(email)
                 .setExpiration(new Date(expiration))
