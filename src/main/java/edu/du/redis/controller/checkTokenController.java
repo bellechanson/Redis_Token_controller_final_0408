@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/test")
@@ -31,20 +32,28 @@ public class checkTokenController {
 
     @PostMapping("create")
     public String createToken(@RequestParam String email) {
-        String token = jwtUtil.createToken("token");
-        redisTemplate.opsForValue().set(email, token);
-
-        System.out.println(redisService.resolveUserClaims(email).get());
+        String token = jwtUtil.createToken(email); // ✔️ 진짜 이메일로 JWT 생성
+        redisService.saveTokenToRedis(email, token); // ✔️ Redis에 저장
+        // 클레임 확인 (Optional로 감싸져 있으니 null 체크하거나 예외 처리 추천)
+        Optional<Map<String, Object>> claims = redisService.resolveUserClaims(email);
+        claims.ifPresent(System.out::println);
         return token;
     }
 
 
 
+    
     @GetMapping("/read")
-    public String readToken() {
-        Map<String, Object> token = jwtUtil.extractClaims("token");
-        System.out.println(token.get("token"));
-        return token.toString();
+    public String readToken(@RequestParam String email) {
+        Optional<String> tokenOptional = redisService.getTokenFromRedis(email);
+        if (tokenOptional.isEmpty()) {
+            return "해당 이메일의 토큰이 Redis에 존재하지 않습니다.";
+        }
+
+        String token = tokenOptional.get();
+        Map<String, Object> claims = jwtUtil.extractClaims(token);
+        return claims.toString();
     }
+
 
 }

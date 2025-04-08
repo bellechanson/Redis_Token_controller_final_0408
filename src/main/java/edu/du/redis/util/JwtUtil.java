@@ -36,7 +36,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(email)
-                .setExpiration(new Date(expiration))
+                .setExpiration(expiryDate) // 수정!
                 .setIssuedAt(now)
                 .signWith(key, SignatureAlgorithm.HS256) // 순서 바뀜!
                 .compact();
