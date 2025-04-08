@@ -1,12 +1,16 @@
 package edu.du.redis.controller;
 
+import edu.du.redis.dto.RedisUser;
+import edu.du.redis.dto.Token;
 import edu.du.redis.service.RedisService;
 import edu.du.redis.service.TokenService;
 import edu.du.redis.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,20 +44,38 @@ public class checkTokenController {
         return token;
     }
 
+    @PostMapping("/info")
+    public RedisUser getUserInfo(@RequestBody Token tokenDto) {
+        String token = tokenDto.getToken();
 
+        Claims claims = jwtUtil.extractClaims(token);
 
-    
-    @GetMapping("/read")
-    public String readToken(@RequestParam String email) {
-        Optional<String> tokenOptional = redisService.getTokenFromRedis(email);
-        if (tokenOptional.isEmpty()) {
-            return "해당 이메일의 토큰이 Redis에 존재하지 않습니다.";
-        }
+        String email = claims.getSubject(); // subject -> email
+        Number idNumber = claims.get("id", Number.class); // 수정됨
+        Long id = idNumber != null ? idNumber.longValue() : null;
+        String userRole = claims.get("role", String.class); // claim
 
-        String token = tokenOptional.get();
-        Map<String, Object> claims = jwtUtil.extractClaims(token);
-        return claims.toString();
+        System.out.println(email);
+        System.out.println(id);
+        System.out.println(userRole);
+
+        return new RedisUser(email, id, userRole);
     }
+
+
+
+
+//    @GetMapping("/read")
+//    public String readToken(@RequestParam String email) {
+//        Optional<String> tokenOptional = redisService.getTokenFromRedis(email);
+//        if (tokenOptional.isEmpty()) {
+//            return "해당 이메일의 토큰이 Redis에 존재하지 않습니다.";
+//        }
+//
+//        String token = tokenOptional.get();
+//        Map<String, Object> claims = jwtUtil.extractClaims(token);
+//        return claims.toString();
+//    }
 
 
 }

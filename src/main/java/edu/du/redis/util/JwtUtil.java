@@ -30,12 +30,13 @@ public class JwtUtil {
         Date expiryDate = new Date(now.getTime() + expiration); // 예: 1시간 후
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email); // 메서드 매개변수 사용
+        claims.put("id", 12345);
         claims.put("role", "USER");
-        claims.put("userId", 12345);
+
 
         return Jwts.builder()
                 .setSubject(email)
+                .addClaims(claims)
                 .setExpiration(expiryDate) // 수정!
                 .setIssuedAt(now)
                 .signWith(key, SignatureAlgorithm.HS256) // 순서 바뀜!
@@ -58,7 +59,7 @@ public class JwtUtil {
     }
 
     // Claims 추출 (토큰에서 데이터 가져오기)
-    public Map<String, Object> extractClaims(String token) {
+    public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
