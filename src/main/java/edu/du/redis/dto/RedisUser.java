@@ -10,8 +10,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class RedisUser {
-    private String email;
-    private Long id;
-    private String role;
-
+    private Long id;         // 사용자 ID
+    private String name;     // 사용자 이름
+    private String email;    // 이메일
+    private String role;     // 권한 등
 }

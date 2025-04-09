@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.du.redis.dto.RedisUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import java.util.concurrent.TimeUnit;
 
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -18,23 +20,51 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
+
+    // key -> value
+    private final StringRedisTemplate redisTemplate1;
     private final ObjectMapper objectMapper;
     private final JwtUtil jwtUtil;
 
-    public RedisUser getUserFromRedis(Long userId) throws JsonProcessingException {
+    public RedisUser getUserFromRedis(Long userId) {
         String key = "user:" + userId;
-        String jsonValue = redisTemplate.opsForValue().get(key);
+        System.out.println(key);
+        String jsonValue = redisTemplate1.opsForValue().get(key);
 
-        if (jsonValue == null) return null;
+        System.out.println(redisTemplate.opsForValue().get(userId));
 
-        return objectMapper.readValue(jsonValue, RedisUser.class);
+        Set<String> keys = redisTemplate.keys(key);
+        Set<String> keys1 = redisTemplate1.keys(key);
+        System.out.println(keys1);
+
+        System.out.println("📦 Redis Key: " + key);
+        System.out.println("📦 Redis Value: " + jsonValue);
+
+        if (jsonValue == null) {
+            System.out.println("❌ Redis에 해당 유저 정보가 없습니다. userId = " + userId);
+            return null;
+        }
+
+        try {
+            RedisUser user = objectMapper.readValue(jsonValue, RedisUser.class);
+            System.out.println("✅ 역직렬화 성공: " + user);
+            return user;
+        } catch (JsonProcessingException e) {
+            System.out.println("❌ 역직렬화 실패: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
+
+
     // Redis에 Token 올리기 코드 필요!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public void saveTokenToRedis(String userId, String token) {
         String redisKey = "JWT_TOKEN:" + userId;
         // 예: 1시간 후 만료되도록 설정
         redisTemplate.opsForValue().set(redisKey, token, 1, TimeUnit.HOURS);
     }
+
+
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 // RedisUser 객체 Redis에 저장하는 메서드
 public void saveUserToRedis(RedisUser user) throws JsonProcessingException {
@@ -55,4 +85,5 @@ public void saveUserToRedis(RedisUser user) throws JsonProcessingException {
                 .filter(jwtUtil::validateToken)
                 .map(jwtUtil::extractClaims);
     }
+
 }

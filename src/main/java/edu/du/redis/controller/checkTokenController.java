@@ -59,7 +59,7 @@ public class checkTokenController {
         System.out.println(id);
         System.out.println(userRole);
 
-        return new RedisUser(email, id, userRole);
+        return new RedisUser(id, null, email, userRole); // name은 null로 처리
     }
 
 
